@@ -7,17 +7,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: logservice_es
+  name: logservice-es
   namespace: ambassador
 spec:
   selector:
     matchLabels:
-      app: logservice_es
+      app: logservice-es
   replicas: 3
   template:
     metadata:
       labels:
-        app: logservice_es
+        app: logservice-es
     spec:
       affinity:
         podAffinity:
@@ -31,7 +31,7 @@ spec:
               topologyKey: kubernetes.io/hostname
             weight: 40
       containers:
-        - name: logservice_es
+        - name: logservice-es
           image: krish512/ambassador_logservice_es
           ports:
             - containerPort: 9001
@@ -55,25 +55,25 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: logservice_es-service
+  name: logservice-es-service
   namespace: ambassador
   labels:
-    app: logservice_es
+    app: logservice-es
 spec:
   ports:
     - port: 9001
       targetPort: 9001
       protocol: TCP
   selector:
-    app: logservice_es
+    app: logservice-es
 ---
 apiVersion: getambassador.io/v2
 kind: LogService
 metadata:
-  name: logservice_es
+  name: logservice-es
   namespace: ambassador
 spec:
-  service: "logservice_es-service.ambassador:9001"
+  service: "logservice-es-service.ambassador:9001"
   driver: http
   driver_config: {}
   grpc: true
