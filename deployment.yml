@@ -1,0 +1,79 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: ambassador
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logservice_es
+  namespace: ambassador
+spec:
+  selector:
+    matchLabels:
+      app: logservice_es
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: logservice_es
+    spec:
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values: ["ambassador"]
+              topologyKey: kubernetes.io/hostname
+            weight: 40
+      containers:
+        - name: logservice_es
+          image: krish512/ambassador_logservice_es
+          ports:
+            - containerPort: 9001
+              protocol: TCP
+          env:
+            - name: ELASTICSEARCH_ENDPOINTS
+              value: "http://eshost.example.com:9200"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 150m
+              memory: 200Mi
+          readinessProbe:
+            tcpSocket:
+              port: 9001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logservice_es-service
+  namespace: ambassador
+  labels:
+    app: logservice_es
+spec:
+  ports:
+    - port: 9001
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    app: logservice_es
+---
+apiVersion: getambassador.io/v2
+kind: LogService
+metadata:
+  name: logservice_es
+  namespace: ambassador
+spec:
+  service: "logservice_es-service.ambassador:9001"
+  driver: http
+  driver_config: {}
+  grpc: true
