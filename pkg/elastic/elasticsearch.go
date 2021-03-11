@@ -85,6 +85,14 @@ func testConnection(endpoints []string) (*elasticsearch.Client, error) {
 		},
 	}
 
+	if os.Getenv("ELASTICSEARCH_USERNAME") != "" {
+		cfg.Username = os.Getenv("ELASTICSEARCH_USERNAME")
+	}
+
+	if os.Getenv("ELASTICSEARCH_PASSWORD") != "" {
+		cfg.Password = os.Getenv("ELASTICSEARCH_PASSWORD")
+	}
+
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		logger.Error("Error creating Elasticsearch client:", zap.Error(err))
