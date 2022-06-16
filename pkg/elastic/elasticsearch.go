@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"encoding/json"
+	"crypto/tls"
 	"errors"
 	"net/http"
 	"os"
@@ -82,6 +83,9 @@ func testConnection(endpoints []string) (*elasticsearch.Client, error) {
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost:   2,
 			ResponseHeaderTimeout: 30 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			  },
 		},
 	}
 
